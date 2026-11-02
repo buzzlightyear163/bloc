@@ -1,0 +1,154 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"JetBrains Mono";font-weight:400;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:500;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:700;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#777;padding:40px;display:flex;flex-direction:column;gap:40px;font-family:"JetBrains Mono",monospace}
+.f{position:relative;width:1600px;height:900px;overflow:hidden;background:var(--bg);color:var(--ink);flex:none}
+.f>*{position:absolute}
+.grid{inset:0;background-image:radial-gradient(circle,rgba(60,50,30,.10) 1px,transparent 1.4px);background-size:22px 22px}
+.mut{color:var(--muted)} .acc{color:var(--accent)} .red{color:var(--red)}
+.live{display:inline-block;padding:0 .5em;background:var(--accent);color:var(--bg);font-weight:700;margin-right:.7em}
+.txt{left:96px;top:0;bottom:0;width:560px;display:flex;flex-direction:column;justify-content:center}
+.p0{font-size:19px;color:var(--muted);white-space:nowrap} .p0 .ink{color:var(--ink)}
+.big{font-size:66px;font-weight:500;letter-spacing:-.03em;line-height:1.04;margin-top:26px}
+.cur{display:inline-block;width:.5em;height:.9em;background:var(--accent);vertical-align:-.08em;margin-left:.1em}
+.sub{font-size:21px;line-height:1.5;margin-top:26px;max-width:26em}
+.chips{margin-top:30px;font-size:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{border:2px solid var(--line);padding:3px 10px;background:var(--card)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
+.chips .lab{color:var(--muted);margin-right:4px}
+.sw{display:inline-block;width:.7em;height:.7em;margin-right:.45em;vertical-align:-.02em}
+.term{border:2px solid var(--line);background:var(--card);box-shadow:14px 14px 0 var(--shadowc)}
+.term .bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:2px solid var(--line);font-size:15px}
+.term .bar i{width:12px;height:12px;border:2px solid var(--line);border-radius:50%}
+.term .bar b{font-weight:500;margin-left:8px}
+.term .bar span{margin-left:auto;color:var(--muted)}
+.screen{position:relative;background:#16211a;margin:16px;overflow:hidden}
+.screen canvas{position:absolute;left:0;top:0;width:100%;height:100%}
+.legend{display:flex;gap:22px;padding:0 18px 16px;font-size:14px;color:var(--muted)}
+.legend .ink{color:var(--ink)}
+/* panel */
+.panel{font-size:16px}
+.panel .body{padding:18px 22px 20px}
+.panel h3{font-size:34px;font-weight:500;letter-spacing:-.02em}
+.panel .off{color:var(--muted);font-size:14px;margin-top:2px}
+.panel .sec{margin-top:18px;font-size:13px;color:var(--muted);letter-spacing:.06em}
+.panel .row{display:flex;align-items:center;gap:12px;margin-top:9px}
+.panel .role{width:9.5em;color:var(--muted);font-size:14px}
+.panel .who{flex:1;font-weight:500}
+.btn{border:2px solid var(--line);padding:3px 10px;font-size:14px;background:var(--bg);white-space:nowrap}
+.btn.on{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
+.bar10{display:inline-flex;gap:3px;vertical-align:middle;margin-left:8px}
+.bar10 u{width:11px;height:14px;background:var(--shadowc)} .bar10 u.h{background:var(--red)}
+/* wire list */
+.wl{font-size:15px;padding:0 18px 16px}
+.wl .r{display:grid;grid-template-columns:26px 120px 1fr 44px;align-items:center;gap:10px;line-height:1.95}
+.wl .r .n{color:var(--muted)} .wl .r .c{text-align:right;font-weight:500}
+.wl .track{height:10px;background:var(--shadowc)} .wl .fill{height:100%;background:var(--red)}
+.foot{font-size:13px;color:var(--muted);padding:0 18px 14px}
+</style></head>
+<body>
+<div id="p1" class="f"><div class="grid"></div></div>
+<div id="p2" class="f"><div class="grid"></div></div>
+<div id="p3" class="f"><div class="grid"></div></div>
+<script src="termkit.js"></script>
+<script src="prelaunch-data.js"></script>
+<script>
+const T = TK.THEMES.paper, D = window.D;
+const vars = `--bg:${T.bg};--ink:${T.ink};--muted:${T.muted};--accent:${T.accent};--red:${T.red};--line:${T.line};--card:${T.card};--shadowc:${T.shadow}`;
+document.querySelectorAll('.f').forEach(f => f.style.cssText += vars);
+const LAND = '#1f3026', DIM = '#24372b', NATO = '#4d8dff', BRICS = '#e6a23c';
+const hex = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const RAMP = ['#2a3d30', '#6e2a1c', '#e0533d', '#ffe1d6'].map(hex);
+function heat(t) { if (t <= 0) return '#26392d'; const x = Math.min(1, t) * 2.999, i = Math.floor(x), a = RAMP[i], b = RAMP[i + 1], u = x - i;
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * u)).join(',')})`; }
+const IDX = Object.fromEntries(D.countries.map((c, i) => [c.id, i]));
+const esc = s => String(s).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+const add = (f, html) => f.insertAdjacentHTML('beforeend', html);
+
+// draw the dot map into a .screen element
+function map(screen, color, after) {
+  const r = screen.getBoundingClientRect(), d = devicePixelRatio || 1, c = document.createElement('canvas');
+  c.width = r.width * d; c.height = r.height * d; screen.append(c);
+  const ctx = c.getContext('2d'); ctx.scale(d, d);
+  const cell = Math.min((r.width - 24) / D.cols, (r.height - 20) / D.rows);
+  const ox = (r.width - cell * D.cols) / 2, oy = (r.height - cell * D.rows) / 2, s = cell * .8;
+  for (let k = 0; k < D.dots.length; k += 3) {
+    const ci = D.dots[k + 2]; ctx.fillStyle = ci < 0 || !D.countries[ci] ? LAND : color(ci);
+    ctx.fillRect(ox + D.dots[k] * cell, oy + D.dots[k + 1] * cell, s, s);
+  }
+  const at = id => { const q = D.countries[IDX[id]]; return [ox + q.cx * cell + s / 2, oy + q.cy * cell + s / 2]; };
+  after && after(ctx, at, cell);
+}
+const ring = (ctx, x, y, R, col, w = 2, a = 1) => { ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = col; ctx.lineWidth = w; ctx.strokeRect(x - R, y - R, R * 2, R * 2); ctx.restore(); };
+const align = i => { const b = D.countries[i].blocs; return b.includes('NATO') ? NATO : b.includes('BRICS') ? BRICS : '#35503e'; };
+const prompt = cmd => `<div class="p0"><span class="live">LIVE</span>anon@bloc ~ % <span class="ink">${cmd}</span></div>`;
+
+// ---------- 1 · the board ----------
+{ const f = p1;
+  add(f, `<div class="txt">${prompt('bloc map --sides')}
+    <div class="big">197 countries.<br>one <span class="acc">map.</span><i class="cur"></i></div>
+    <div class="sub">342 world leaders and 17 blocs, from NATO and BRICS to CRINK and the Nuclear 9. Click a country, pick who to pair.</div>
+    <div class="chips"><span class="lab">17 blocs</span><span class="chip">nato</span><span class="chip">brics</span><span class="chip">crink</span><span class="chip">p5</span><span class="chip">nuclear 9</span><span class="chip">+12</span></div></div>
+  <div class="term" style="left:700px;top:208px;width:810px">
+    <div class="bar"><i></i><i></i><i></i><b>bloc map</b><span>mode: sides</span></div>
+    <div class="screen" style="height:330px"></div>
+    <div class="legend"><span><i class="sw" style="background:${NATO}"></i><span class="ink">nato</span></span><span><i class="sw" style="background:${BRICS}"></i><span class="ink">brics</span></span><span><i class="sw" style="background:#35503e"></i>in neither</span><span style="margin-left:auto">197 countries · 342 leaders</span></div>
+  </div>`);
+  map(f.querySelector('.screen'), align);
+}
+
+// ---------- 2 · click iran ----------
+{ const f = p2, ir = IDX.IRN, n = D.counts[ir];
+  const rank = 1 + D.counts.filter(v => v > n).length, max = Math.max(...D.counts);
+  const bars = Array.from({ length: 10 }, (_, k) => `<u class="${k < Math.round(10 * n / max) ? 'h' : ''}"></u>`).join('');
+  const blocs = D.countries[ir].blocs.map(b => `<span class="chip">${b.toLowerCase()}</span>`).join('');
+  add(f, `<div class="txt">${prompt('bloc open iran')}
+    <div class="big">click<br><span class="acc">iran.</span><i class="cur"></i></div>
+    <div class="sub">Who runs it, the blocs it sits in, the last 24 hours of headlines that name it. One more click and the coin is yours.</div></div>
+  <div class="term" style="left:690px;top:120px;width:640px">
+    <div class="bar"><i></i><i></i><i></i><b>bloc map</b><span>iran selected</span></div>
+    <div class="screen" style="height:262px"></div>
+  </div>
+  <div class="term panel" style="left:880px;top:372px;width:640px">
+    <div class="bar"><i></i><i></i><i></i><b>iran.country</b><span>IR</span></div>
+    <div class="body">
+      <h3>Iran</h3><div class="off">Islamic Republic of Iran</div>
+      <div class="sec">LEADERS</div>
+      <div class="row"><span class="role">supreme leader</span><span class="who">Mojtaba Khamenei</span><span class="btn">pair $KHAMENEI</span></div>
+      <div class="row"><span class="role">president</span><span class="who">Masoud Pezeshkian</span><span class="btn">pair $PEZESHKIAN</span></div>
+      <div class="sec">BLOCS · ON THE WIRE</div>
+      <div class="row"><span class="chips" style="margin:0;gap:6px">${blocs}</span><span style="margin-left:auto;font-size:14px"><b>${n}</b> <span class="mut">headlines · #${rank}</span><span class="bar10">${bars}</span></span></div>
+      <div class="row" style="margin-top:18px"><span class="btn on">pair the country · $IRAN</span><span class="mut" style="font-size:14px;margin-left:auto">+ coins already on solana</span></div>
+    </div>
+  </div>`);
+  map(f.querySelector('.screen'), i => i === ir ? T.accent : align(i) === '#35503e' ? LAND : DIM, (ctx, at) => {
+    const [x, y] = at('IRN'); ring(ctx, x, y, 16, T.accent, 2); ring(ctx, x, y, 28, T.accent, 2, .4);
+  });
+}
+
+// ---------- 3 · choosing sides ----------
+{ const f = p3, max = Math.max(...D.counts);
+  const top = D.counts.map((v, i) => [v, i]).filter(x => x[0] > 0).sort((a, b) => b[0] - a[0]);
+  const rows = top.slice(0, 5).map(([v, i], k) => `<div class="r"><span class="n">${String(k + 1).padStart(2, '0')}</span><span>${esc(D.countries[i].name.toLowerCase())}</span><div class="track"><div class="fill" style="width:${100 * v / max}%"></div></div><span class="c">${v}</span></div>`).join('');
+  const day = new Date(D.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).toLowerCase();
+  add(f, `<div class="txt">${prompt('bloc wire --24h')}
+    <div class="big">the world is<br>choosing<br><span class="acc">sides.</span><i class="cur"></i></div>
+    <div class="sub">The wire counts every war and politics headline by country. The brightest dots are where the news points.</div>
+    <div class="chips"><span class="lab">pick a side</span><span class="chip">nato</span><span class="chip">brics</span><span class="chip">crink</span><span class="chip">p5</span><span class="chip on">solo</span></div></div>
+  <div class="term" style="left:700px;top:96px;width:810px">
+    <div class="bar"><i></i><i></i><i></i><b>bloc wire</b><span>last 24h · ${day}</span></div>
+    <div class="screen" style="height:318px"></div>
+    <div class="wl">${rows}</div>
+    <div class="foot">it measures attention, not who is right.</div>
+  </div>`);
+  const hot = top.slice(0, 7).map(x => D.countries[x[1]].id);
+  map(f.querySelector('.screen'), i => D.counts[i] ? heat(Math.sqrt(D.counts[i] / max)) : DIM, (ctx, at) => {
+    for (const id of hot) { const [x, y] = at(id); ring(ctx, x, y, 12, '#e0533d', 2, .75); }
+  });
+}
+document.fonts.ready.then(() => document.body.dataset.ready = 1);
+</script></body></html>

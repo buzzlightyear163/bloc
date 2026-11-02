@@ -22,6 +22,7 @@ Pair a memecoin to any world leader, country or bloc.
 
 ## Pre-launch
 ### 1. Reveal (pin) — today, evening
+Image: `grafik/prelaunch-1-reveal.png`
 Every headline this week is a war or an election.
 
 The trenches already trade it. A coin for the war, a coin for the peace, a coin for whoever made the news today. Launched by hand, one name at a time.
@@ -35,6 +36,7 @@ Click a country, see who runs it, pair a coin to them. Or skip the person and pa
 Launching on pump.fun [tid].
 
 ### 2. Inside — tomorrow, afternoon
+Image: `grafik/prelaunch-2-inside.png`
 Click Iran on the map.
 
 A window opens: the supreme leader and the president, the four blocs Iran sits in, the last 24 hours of headlines that name it, and every Solana coin already using the name.
@@ -50,6 +52,7 @@ What's inside:
 Every president, prime minister, king and supreme leader is one search away.
 
 ### 3. Why now + last call — 30–90 min before launch
+Image: `grafik/prelaunch-3-sides.png`
 [tid]. pump.fun.
 
 The world is choosing sides in public. Election week in the US, talk of new strikes, alliances on every front page, and nowhere to put a coin on all of it at once.
