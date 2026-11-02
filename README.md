@@ -34,7 +34,7 @@ Environment variables:
 ## Edit
 
 - `src/config.ts` — $BLOC contract address (`ca`), X link, Telegram, pixel `object`. Empty CA shows "posted here and on X at launch"; buy buttons go to `https://pump.fun/coin/<ca>` once it's set.
-- `grafik/` — pfp (2000²), banner (3000×1000), launch (3200×1800), og, fav. Re-render: `cd grafik && npm i @fontsource/jetbrains-mono @fontsource/silkscreen && python3 render.py cfg.json .` (needs Python Playwright).
+- `grafik/` — pfp (2000²), banner (3000×1000), launch (3200×1800), og, fav. Re-render: `cd grafik && npm i @fontsource/jetbrains-mono @fontsource/silkscreen && python3 render.py cfg.json .` (needs Python Playwright). The X banner is its own page without the computer (so it doesn't repeat the pfp): `python3 render_banner.py` in `grafik/` renders `banner.png` from `banner.html` + `world-dots.js`. `x-profile-mock.png` shows how banner and pfp sit together.
 - `data/leaders.raw.json` — heads of state/government (Wikipedia, captured 2 Nov 2026). After editing run `npm run data`.
 - `scripts/build-data.mjs` — bloc memberships, aliases used for headline matching, map grid.
 - `src/data/heat-snapshot.json` — fallback headline snapshot shown (labelled) if both news feeds are down.

@@ -1,0 +1,55 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"JetBrains Mono";font-weight:400;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:500;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:700;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#777;padding:40px;font-family:"JetBrains Mono",monospace}
+#banner{position:relative;width:1500px;height:500px;overflow:hidden;background:var(--bg);color:var(--ink)}
+#banner>*{position:absolute}
+.grid{inset:0;background-image:radial-gradient(circle,rgba(60,50,30,.10) 1px,transparent 1.4px);background-size:22px 22px}
+.under{left:760px;top:378px;width:700px}
+.under .sub{font-size:24px;font-weight:700;letter-spacing:-.015em}
+.under .facts{font-size:16px;color:var(--muted);margin-top:10px}
+.under .facts b{color:var(--accent);font-weight:500}
+.hot{display:inline-block;width:.6em;height:.6em;background:var(--red);margin-right:.45em;vertical-align:.02em}
+.cur{display:inline-block;width:.56em;height:1.02em;background:var(--accent);vertical-align:-.16em;margin-left:.15em}
+.tagline{left:74px;top:42px;font-size:17px;color:var(--muted)}
+.tagline .ink{color:var(--ink)}
+.live{display:inline-block;padding:0 .5em;background:var(--accent);color:var(--bg);font-weight:700;margin-right:.7em}
+</style></head>
+<body>
+<div id="banner"><div class="grid"></div></div>
+<script src="termkit.js"></script>
+<script src="world-dots.js"></script>
+<script>
+const T = TK.THEMES.paper, B = document.getElementById('banner');
+B.style.cssText += `--bg:${T.bg};--ink:${T.ink};--muted:${T.muted};--accent:${T.accent};--red:${T.red}`;
+const ctx = TK.canvasFor(B);
+// ---- world map, right column
+const W = window.WORLD, mx = 760, my = 58, cell = 2.33, r = 0.78;
+ctx.fillStyle = 'rgba(43,42,38,.36)';
+for (let k = 0; k < W.dots.length; k += 3) {
+  const x = mx + W.dots[k] * cell, y = my + W.dots[k + 1] * cell;
+  ctx.fillRect(x, y, cell * r, cell * r);
+}
+for (const [cx, cy] of W.hot) {
+  const x = mx + cx * cell + cell / 2, y = my + cy * cell + cell / 2;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 34);
+  g.addColorStop(0, 'rgba(201,69,46,.55)'); g.addColorStop(1, 'rgba(201,69,46,0)');
+  ctx.fillStyle = g; ctx.fillRect(x - 34, y - 34, 68, 68);
+  ctx.fillStyle = T.red; ctx.fillRect(x - 4, y - 4, 8, 8);
+  ctx.strokeStyle = T.red; ctx.lineWidth = 2; ctx.globalAlpha = .55; ctx.strokeRect(x - 11, y - 11, 22, 22); ctx.globalAlpha = 1;
+}
+// ---- LED title, left column
+const lk = 10.5, ty = 80, l2 = ty + 10 * lk + 16;
+TK.led(ctx, 'PICK A', { x: 74, y: ty, cell: lk, color: T.ink });
+const bw = TK.led(ctx, 'BLOC', { x: 74, y: l2, cell: lk, color: T.accent });
+ctx.fillStyle = T.accent; ctx.fillRect(74 + bw + 2, l2, lk * 4 - 2, 10 * lk - 2);
+B.insertAdjacentHTML('beforeend', `
+  <div class="tagline"><span class="live">LIVE</span>anon@bloc ~ % <span class="ink">bloc --world-stage</span></div>
+  <div class="under"><div class="sub">every leader. every country. every alliance.</div>
+  <div class="facts"><b>197</b> countries · <b>342</b> leaders · <b>17</b> blocs · <i class="hot"></i>live flashpoints</div></div>`);
+document.fonts.ready.then(() => document.body.dataset.ready = 1);
+</script></body></html>
