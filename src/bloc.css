@@ -215,3 +215,8 @@
   .top .btn + .btn { margin-left: 0; }
 }
 .pair > *, .build-top > *, .fields > *, .grid > * { min-width: 0; }
+
+/* CA chip: keep the full address on screen on phones, copy button wraps below */
+.ca { max-width: 100%; }
+.ca code { min-width: 0; }
+@media (max-width: 520px) { .ca { flex-wrap: wrap; row-gap: 8px; } .ca code { font-size: 11px; } }
