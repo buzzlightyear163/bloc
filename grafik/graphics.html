@@ -1,0 +1,134 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"JetBrains Mono";font-weight:400;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:500;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:700;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2)}
+@font-face{font-family:"Silkscreen";font-weight:400;src:url(node_modules/@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#777;font-family:"JetBrains Mono",monospace;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}
+.f{position:relative;overflow:hidden;background:var(--bg);color:var(--ink);flex:none}
+.f>*:not(canvas){position:relative}
+.decor-grid{background-image:radial-gradient(circle,var(--grid) 1px,transparent 1.4px);background-size:22px 22px}
+.mut{color:var(--muted)} .acc{color:var(--accent)} .red{color:var(--red)} .ink{color:var(--ink)}
+.cur{display:inline-block;width:.56em;height:1.02em;background:var(--accent);vertical-align:-.16em;margin-left:.12em;box-shadow:var(--curglow)}
+.glow .acc,.glow .big,.glow .tag{text-shadow:0 0 .35em var(--accent)}
+/* banner */
+#banner{width:1500px;height:500px}
+#banner .txt{position:absolute;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center}
+.L-readme .p1{font-size:40px;font-weight:500;letter-spacing:-.01em;white-space:nowrap}
+.L-readme .p1 .mut{font-weight:400}
+.L-readme .sub{font-size:17px;margin-top:10px}
+.cols{display:grid;grid-template-columns:auto auto;gap:0 70px;margin-top:38px;font-size:15.5px;line-height:1.95}
+.cols .h{font-size:13px;letter-spacing:.04em}
+.chip{display:inline-block;padding:0 .55em;margin-right:.35em;line-height:1.55}
+.chip.on{background:var(--accent);color:var(--bg)}
+.row b{display:inline-block;width:2.4em;font-weight:700}
+.L-mono .p0{font-size:21px} .L-mono .big{font-size:84px;font-weight:500;letter-spacing:-.02em;margin-top:6px;white-space:nowrap} .L-mono .sub{font-size:19px;margin-top:16px}
+.L-big .eyebrow{font-family:Silkscreen;font-size:15px;letter-spacing:.12em}
+.L-big .tag{font-family:Silkscreen;font-size:34px;margin-top:22px;white-space:nowrap}
+/* launch + og share one layout, scaled by font-size */
+.launch{width:1600px;height:900px;font-size:16px}
+#og{width:1200px;height:630px;font-size:12px}
+.launch .txt{position:absolute;left:47%;right:5%;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center}
+.launch .p0{font-size:1.45em}
+.launch .big{font-size:5.1em;font-weight:500;letter-spacing:-.025em;line-height:1.05;margin-top:.2em}
+.launch .sub{font-size:1.45em;margin-top:.8em;max-width:30em;line-height:1.45}
+.term{margin-top:2.4em;border:2px solid var(--line);background:var(--card);box-shadow:.55em .55em 0 var(--shadowc);font-size:1.15em;max-width:36em}
+.term .bar{display:flex;align-items:center;gap:.5em;padding:.55em .9em;border-bottom:2px solid var(--line);font-size:.85em}
+.term .bar i{width:.75em;height:.75em;border:2px solid var(--line);border-radius:50%;display:inline-block}
+.term .bar span{margin-left:auto}
+.term .body{padding:.9em 1.1em;line-height:1.85}
+#pfp{width:1000px;height:1000px}
+</style></head>
+<body>
+<div id="pfp" class="f"></div>
+<div id="banner" class="f"></div>
+<div id="launch" class="f launch"></div>
+<div id="og" class="f launch"></div>
+<div id="fav" class="f" style="width:180px;height:180px"></div>
+<script src="termkit.js"></script>
+<script>
+const C = Object.assign({
+  ticker:"$OCT", theme:"paper", user:"anon", host:"oct-lab", object:"computer",
+  command:"onchain trading", sub:"every coin trades for its holders.",
+  layout:"readme", decor:[], glow:null,
+  list:[], chips:null, split:null, eyebrow:"", tag:"",
+  launch:{ cmd:"", lines:[], window:"" },
+}, window.CFG || {});
+const T = TK.THEMES[C.theme];
+const esc = s => String(s).replace(/[&<>]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));
+const tick = C.ticker.replace(/^\$/,"");
+const glowOn = C.glow ?? (C.theme === "phosphor");          // text glow: phosphor only
+const curGlow = glowOn || C.theme === "graphite";            // graphite: glowing cursor only
+const vars = `--bg:${T.bg};--ink:${T.ink};--muted:${T.muted};--accent:${T.accent};--red:${T.red};--line:${T.line};--card:${T.card};--shadowc:${T.shadow};--grid:${C.theme==="paper"?"rgba(60,50,30,.10)":"rgba(255,255,255,.05)"};--curglow:${curGlow?`0 0 .5em ${T.accent}`:"none"}`;
+document.querySelectorAll(".f").forEach(f => { f.style.cssText += vars; if (glowOn) f.classList.add("glow"); if (C.decor.includes("grid")) f.classList.add("decor-grid"); });
+const prompt = `<span class="mut">${esc(C.user)}@${esc(C.host)} ~ %</span>`;
+
+function decor(f, ctx, W, H, x0 = .35, x1 = 1) { // dots fill x0..x1 of the width, keep them off the text
+  if (C.decor.includes("dots")) { // dot-matrix field from value noise (reads as a map / heat field)
+    const n = (x, y) => { const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453; return s - Math.floor(s); };
+    const sm = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf*xf*(3-2*xf), v = yf*yf*(3-2*yf);
+      return (n(xi,yi)*(1-u)+n(xi+1,yi)*u)*(1-v) + (n(xi,yi+1)*(1-u)+n(xi+1,yi+1)*u)*v; };
+    const step = Math.round(W / 150);
+    for (let y = 0; y < H; y += step) for (let x = W * x0; x < W * x1; x += step) {
+      const v = sm(x / (W/9), y / (W/9)) * .65 + sm(x / (W/22), y / (W/22)) * .35;
+      if (v > .52) { ctx.globalAlpha = Math.min(.5, (v - .52) * 2.2); ctx.fillStyle = T.accent; ctx.fillRect(x, y, step * .55, step * .55); }
+    }
+    ctx.globalAlpha = 1;
+  }
+  if (C.decor.includes("beacon")) { const [bx, by] = C.beacon || [.8, .12]; const g = ctx.createRadialGradient(W*bx, H*by, 0, W*bx, H*by, H*.12);
+    g.addColorStop(0, "#fff"); g.addColorStop(.08, T.red); g.addColorStop(1, "transparent"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  if (C.decor.includes("chart")) { // faint dotted price line along the bottom
+    ctx.fillStyle = T.muted; ctx.globalAlpha = .35; let y = H * .86;
+    for (let x = 0; x < W; x += 4) { y += (Math.sin(x * .031) + Math.sin(x * .0071) * 1.6 + (Math.sin(x * 1.7) * .5)) * .9; ctx.fillRect(x, y, 2, 2); }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function place(f, ctx, obj, cell, cx, cy, opts = {}) { // draw object with its center at (cx, cy)
+  const g = TK.OBJECTS[obj]({ ticker: C.ticker });
+  return TK.draw(ctx, g, Object.assign({ theme: T, cell, x: cx - g.w * cell / 2, y: cy - g.h * cell / 2 }, opts));
+}
+
+// ---- PFP ----
+{ const f = pfp, ctx = TK.canvasFor(f); const keep = C.decor; C.decor = keep.filter(d => d === "grid" || d === "dots"); decor(f, ctx, 1000, 1000); C.decor = keep;
+  const g = TK.OBJECTS[C.object]({ ticker: C.ticker }); const cell = Math.floor(620 / Math.max(g.w, g.h));
+  place(f, ctx, C.object, cell, 500, 500, { shadow: C.pfpShadow ?? true }); }
+
+// ---- BANNER ----
+{ const f = banner; f.classList.add("L-" + C.layout); const ctx = TK.canvasFor(f); decor(f, ctx, 1500, 500);
+  if (C.layout === "big") {
+    f.insertAdjacentHTML("beforeend", `<div class="txt" style="left:90px"><div class="eyebrow mut">${esc(C.eyebrow)}</div><canvas id="ledc" style="margin-top:20px;image-rendering:pixelated"></canvas><div class="tag">${esc(C.tag || C.command)}<span class="cur"></span></div></div>`);
+    const lk = 9, lw = TK.textWidth(tick) * 2 * lk + 30, lh = 10 * lk + 30, d = devicePixelRatio;
+    ledc.width = lw * d; ledc.height = lh * d; ledc.style.width = lw + "px"; ledc.style.height = lh + "px"; ledc.style.margin = "5px -15px -15px";
+    const lc = ledc.getContext("2d"); lc.scale(d, d); TK.led(lc, tick, { x: 15, y: 15, cell: lk, color: T.accent, glow: glowOn, dim: true });
+    place(f, ctx, C.object, 6, 1120, 255);
+  } else if (C.layout === "mono") {
+    place(f, ctx, C.object, 7, 245, 205);
+    f.insertAdjacentHTML("beforeend", `<div class="txt" style="left:520px"><div class="p0">${prompt}</div><div class="big">${esc(C.command)}<span class="cur"></span></div><div class="sub mut">${esc(C.sub)}</div></div>`);
+  } else { // readme
+    place(f, ctx, C.object, 6, 215, 200);
+    const list = C.list.map((l, i) => i === 0 ? `<div class="acc">$ ${esc(l)}</div>` : `<div><span class="acc">✓</span> ${esc(l)}</div>`).join("");
+    const chips = C.chips ? `<div class="h mut"># ${esc(C.chips.label)}</div><div>${C.chips.items.map((c, i) => `<span class="chip ${i === C.chips.on ? "on" : "mut"}">${esc(c)}</span>`).join("")}</div>` : "";
+    const split = C.split ? `<div class="h mut"># ${esc(C.split.label)}</div>` + C.split.rows.map(r => `<div class="row"><b class="${r[2] || "ink"}">${esc(r[0])}</b>${esc(r[1])}</div>`).join("") : "";
+    f.insertAdjacentHTML("beforeend", `<div class="txt" style="left:470px"><div class="p1">${prompt} ${esc(C.command)}<span class="cur"></span></div><div class="sub mut">${esc(C.sub)}</div><div class="cols"><div>${list}</div><div>${chips}${split}</div></div></div>`);
+  }
+}
+
+// ---- LAUNCH + OG (same layout, og is 0.75x) ----
+for (const f of [launch, og]) { const s = f.id === "og" ? .75 : 1, W = 1600 * s, H = 900 * s;
+  const ctx = TK.canvasFor(f); decor(f, ctx, W, H, 0, .44);
+  const g = TK.OBJECTS[C.object]({ ticker: C.ticker }); const cell = Math.floor(470 * s / Math.max(g.w, g.h));
+  place(f, ctx, C.object, cell, W * .245, H * .46);
+  const L = C.launch, lines = (L.lines || []).map(l => `<div><span class="acc">✓</span> ${esc(l)}</div>`).join("");
+  f.insertAdjacentHTML("beforeend", `<div class="txt"><div class="p0">${prompt}</div><div class="big">${esc(C.command)}<span class="cur"></span></div><div class="sub mut">${esc(C.sub)}</div>
+    <div class="term"><div class="bar"><i></i><i></i><i></i><span class="mut">${esc(L.window || C.host + " — zsh")}</span></div>
+    <div class="body"><div>${prompt} <span class="ink">${esc(L.cmd || tick.toLowerCase() + " --live")}</span></div>${lines}<div><span class="mut">status</span>  <span class="chip on"><b>LIVE</b></span></div></div></div></div>`);
+}
+// ---- FAVICON (object only, no shadow) ----
+{ const ctx = TK.canvasFor(fav), g = TK.OBJECTS[C.object]({ ticker: C.ticker }), cell = Math.floor(150 / Math.max(g.w, g.h));
+  TK.draw(ctx, g, { theme: T, cell, x: (180 - g.w * cell) / 2, y: (180 - g.h * cell) / 2, shadow: false }); }
+document.fonts.ready.then(() => document.body.dataset.ready = 1);
+</script>
+</body></html>

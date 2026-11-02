@@ -4,7 +4,7 @@ import { BLOC_BY_CODE } from '../lib/blocs';
 import { renderCoinImage, canvasToBlob, subjectColor } from '../lib/coinImage';
 import { WALLETS, connectWallet, short, type SolProvider } from '../lib/wallet';
 import { launchCoin } from '../lib/launch';
-import { SectionHead } from './Sections';
+import { Eyebrow } from './Chrome';
 
 interface Props { subjectKey: string; setSubjectKey: (k: string) => void; launchOn: boolean }
 type Log = { t: string; k: 'ok' | 'err' | 'info' };
@@ -79,42 +79,47 @@ export default function Pair({ subjectKey, setSubjectKey, launchOn }: Props) {
   const color = subjectColor(subject);
 
   return (
-    <section className="sec" id="pair">
-      <div className="wrap">
-        <SectionHead k="04 — Launch" title="Pair a coin." sub="Pick who it’s paired to, name it, launch it. One transaction, your wallet, live on pump.fun." />
+    <section className="s" id="pair">
+      <div className="wrap wide">
+        <Eyebrow n="04" label="the launcher" />
+        <h2><span className="pr">%</span>bloc pair --coin</h2>
+        <p className="lede">Pick who it’s paired to, name it, launch it. One signature, your wallet, live on pump.fun. <span className={`lamp ${launchOn ? 'live' : ''}`}>{launchOn ? 'one-click launch on' : 'launch via pump.fun'}</span></p>
         <div className="pair">
-          <div className="pair-pick">
+          <div className="term pair-pick">
+            <div className="bar"><i /><i /><i /><span>search — {results.length} results</span></div>
             <div className="search">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search leaders, countries and blocs" aria-label="Search subjects" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="search leaders, countries and blocs" aria-label="Search subjects" />
             </div>
             <div className="results" role="listbox">
               {results.map((s) => (
                 <button key={s.key} role="option" aria-selected={s.key === subjectKey} className={`res ${s.key === subjectKey ? 'on' : ''}`} onClick={() => setSubjectKey(s.key)}>
-                  <span className="res-av mono" style={{ '--c': subjectColor(s) } as React.CSSProperties}>
+                  <span className="res-av" style={{ '--c': subjectColor(s) } as React.CSSProperties}>
                     {s.kind === 'bloc' ? s.ticker.slice(0, 4) : s.kind === 'country' ? COUNTRIES[s.country!].id : initials(s.name)}
                   </span>
                   <span className="res-txt"><b>{s.name}</b><span>{s.sub}</span></span>
-                  <span className="res-kind mono">{s.kind}</span>
+                  <span className="res-kind">{s.kind}</span>
                 </button>
               ))}
-              {!results.length && <p className="muted small pad">No match. Try a country or a last name.</p>}
+              {!results.length && <p className="mut small pad">no match. try a country or a last name.</p>}
             </div>
           </div>
 
-          <div className="pair-build">
+          <div className="term pair-build">
+            <div className="bar"><i /><i /><i /><span>new coin — ${T || '—'}</span></div>
+            <div className="body build-body">
             <div className="build-top">
               <div className="preview" style={{ '--c': color } as React.CSSProperties}>
                 <canvas ref={cvs} style={{ display: upload ? 'none' : 'block' }} />
                 {upload && <img src={uploadUrl} alt="Your coin image" />}
               </div>
               <div className="build-meta">
-                <div className="kicker mono">Paired to</div>
+                <div className="mut small"># paired to</div>
                 <div className="paired"><b>{subject.name}</b><span>{subject.sub}</span></div>
                 <div className="img-switch">
-                  <button className={!upload ? 'on' : ''} onClick={() => setUpload(null)}>Generated</button>
+                  <button className={!upload ? 'on' : ''} onClick={() => setUpload(null)}>generated</button>
                   <label className={upload ? 'on' : ''}>
-                    Upload
+                    upload
                     <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" onChange={(e) => setUpload(e.target.files?.[0] || null)} hidden />
                   </label>
                 </div>
@@ -122,14 +127,14 @@ export default function Pair({ subjectKey, setSubjectKey, launchOn }: Props) {
             </div>
 
             <div className="fields">
-              <label className="field"><span>Name</span><input value={name} maxLength={32} onChange={(e) => setName(e.target.value)} /><em className="mono">{name.length}/32</em></label>
-              <label className="field"><span>Ticker</span><div className="tick"><b>$</b><input value={T} maxLength={10} onChange={(e) => setTicker(e.target.value)} /></div></label>
-              <label className="field wide"><span>Description <i>optional</i></span><textarea rows={2} value={desc} maxLength={400} onChange={(e) => setDesc(e.target.value)} placeholder="Say something. Or don’t." /></label>
-              <div className="field wide lock"><span>Pairing line <i>always added</i></span><p>{pairing}</p></div>
-              <label className="field"><span>X link <i>optional</i></span><input value={xUrl} onChange={(e) => setXUrl(e.target.value)} placeholder="https://x.com/…" /></label>
-              <label className="field"><span>Telegram <i>optional</i></span><input value={tg} onChange={(e) => setTg(e.target.value)} placeholder="https://t.me/…" /></label>
+              <label className="field"><span>name</span><input value={name} maxLength={32} onChange={(e) => setName(e.target.value)} /><em>{name.length}/32</em></label>
+              <label className="field"><span>ticker</span><div className="tick"><b>$</b><input value={T} maxLength={10} onChange={(e) => setTicker(e.target.value)} /></div></label>
+              <label className="field wide"><span>description <i>optional</i></span><textarea rows={2} value={desc} maxLength={400} onChange={(e) => setDesc(e.target.value)} placeholder="say something. or don’t." /></label>
+              <div className="field wide lock"><span>pairing line <i>always added</i></span><p>{pairing}</p></div>
+              <label className="field"><span>x link <i>optional</i></span><input value={xUrl} onChange={(e) => setXUrl(e.target.value)} placeholder="https://x.com/…" /></label>
+              <label className="field"><span>telegram <i>optional</i></span><input value={tg} onChange={(e) => setTg(e.target.value)} placeholder="https://t.me/…" /></label>
               <div className="field wide">
-                <span>Dev buy</span>
+                <span>dev buy</span>
                 <div className="devbuy">
                   {[0.05, 0.1, 0.5, 1, 2].map((v) => <button key={v} className={devBuy === v ? 'on' : ''} onClick={() => setDevBuy(v)}>{v} SOL</button>)}
                   <input type="number" min={0.01} max={5} step={0.01} value={devBuy} onChange={(e) => setDevBuy(Number(e.target.value))} aria-label="Dev buy in SOL" />
@@ -142,44 +147,45 @@ export default function Pair({ subjectKey, setSubjectKey, launchOn }: Props) {
             {launchOn ? (
               <div className="launch-row">
                 {wallet ? (
-                  <span className="wallet-chip mono"><i />{wallet.name} · {short(wallet.address)}</span>
+                  <span className="wallet-chip"><i />{wallet.name} · {short(wallet.address)}</span>
                 ) : (
                   <div className="wallets">
                     {WALLETS.map((w) => (
-                      <button key={w.id} className="btn btn-line btn-sm" onClick={async () => {
+                      <button key={w.id} className="btn" onClick={async () => {
                         try { const r = await connectWallet(w); setWallet({ ...r, name: w.name }); } catch (e) { log((e as Error).message, 'err'); }
                       }}>{w.name}</button>
                     ))}
                   </div>
                 )}
-                <button className="btn btn-primary btn-launch" disabled={!wallet || busy || errors.length > 0} onClick={onLaunch}>
-                  {busy ? 'Launching…' : `Launch $${T || '—'}`}
+                <button className="btn pri btn-launch" disabled={!wallet || busy || errors.length > 0} onClick={onLaunch}>
+                  {busy ? 'launching…' : `launch $${T || '—'} →`}
                 </button>
               </div>
             ) : (
               <div className="launch-row">
-                <p className="muted small handoff-note">Downloads the coin image, copies the name, ticker and pairing line, and opens pump.fun’s launcher.</p>
-                <button className="btn btn-primary btn-launch" disabled={errors.length > 0} onClick={onHandoff}>Launch ${T || '—'} on pump.fun</button>
+                <p className="mut small handoff-note">Downloads the coin image, copies the name, ticker and pairing line, and opens pump.fun’s launcher.</p>
+                <button className="btn pri btn-launch" disabled={errors.length > 0} onClick={onHandoff}>launch ${T || '—'} on pump.fun →</button>
               </div>
             )}
 
             {logs.length > 0 && (
-              <div className="console mono" aria-live="polite">
+              <div className="console" aria-live="polite">
                 {logs.map((l, i) => <div key={i} className={l.k}><span>{l.k === 'err' ? '✕' : l.k === 'ok' ? '✓' : '›'}</span>{l.t}</div>)}
               </div>
             )}
 
             {done && (
               <div className="done">
-                <div className="kicker mono">Live · contract address</div>
+                <div className="mut small"># live · contract address</div>
                 <code>{done.mint}</code>
                 <div className="done-links">
-                  <a className="btn btn-primary btn-sm" href={`https://pump.fun/coin/${done.mint}`} target="_blank" rel="noreferrer">Open on pump.fun</a>
-                  <a className="btn btn-line btn-sm" href={`https://solscan.io/tx/${done.sig}`} target="_blank" rel="noreferrer">Transaction</a>
-                  <button className="btn btn-line btn-sm" onClick={() => navigator.clipboard.writeText(done.mint)}>Copy CA</button>
+                  <a className="btn pri" href={`https://pump.fun/coin/${done.mint}`} target="_blank" rel="noreferrer">open on pump.fun</a>
+                  <a className="btn" href={`https://solscan.io/tx/${done.sig}`} target="_blank" rel="noreferrer">transaction</a>
+                  <button className="btn" onClick={() => navigator.clipboard.writeText(done.mint)}>copy ca</button>
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

@@ -13,11 +13,11 @@ export interface BlocMeta {
 
 export const BLOC_META: BlocMeta[] = [
   { code: 'NATO', label: 'NATO', name: 'North Atlantic Treaty Organization', ticker: 'NATO', color: '#4d8dff', line: 'Military alliance, founded 1949. An attack on one is an attack on all.' },
-  { code: 'BRICS', label: 'BRICS', name: 'BRICS', ticker: 'BRICS', color: '#ff4d6d', line: 'Emerging-economy bloc, expanded from five founders to eleven members.' },
-  { code: 'CRINK', label: 'CRINK', name: 'China · Russia · Iran · North Korea', ticker: 'CRINK', color: '#ff2a2a', line: 'Media shorthand for the four states aligned against the US-led order.' },
+  { code: 'BRICS', label: 'BRICS', name: 'BRICS', ticker: 'BRICS', color: '#e6a23c', line: 'Emerging-economy bloc, expanded from five founders to eleven members.' },
+  { code: 'CRINK', label: 'CRINK', name: 'China · Russia · Iran · North Korea', ticker: 'CRINK', color: '#c084fc', line: 'Media shorthand for the four states aligned against the US-led order.' },
   { code: 'NUKE', label: 'Nuclear 9', name: 'Nuclear-armed states', ticker: 'NUKES', color: '#a3e635', line: 'The nine states believed to hold nuclear weapons. Israel has never declared.' },
   { code: 'P5', label: 'P5', name: 'UN Security Council · permanent five', ticker: 'P5', color: '#f472b6', line: 'Five permanent seats, five vetoes.' },
-  { code: 'G7', label: 'G7', name: 'Group of Seven', ticker: 'G7', color: '#e5e7eb', line: 'Seven large advanced economies, meeting yearly since 1975.' },
+  { code: 'G7', label: 'G7', name: 'Group of Seven', ticker: 'G7', color: '#a8b0bd', line: 'Seven large advanced economies, meeting yearly since 1975.' },
   { code: 'G20', label: 'G20', name: 'Group of Twenty', ticker: 'G20', color: '#2dd4bf', line: 'Nineteen countries plus the EU and the African Union.' },
   { code: 'EU', label: 'EU', name: 'European Union', ticker: 'EU', color: '#8b7cff', line: 'Political and economic union of 27 European states.' },
   { code: 'SCO', label: 'SCO', name: 'Shanghai Cooperation Organisation', ticker: 'SCO', color: '#fb923c', line: 'Eurasian security and economic organisation led by China and Russia.' },
@@ -35,6 +35,6 @@ export const BLOC_BY_CODE = Object.fromEntries(BLOC_META.map((b) => [b.code, b])
 
 export const ALIGN = {
   NATO: '#4d8dff',
-  BRICS: '#ff4d6d',
-  NONE: '#2a2f37',
+  BRICS: '#e6a23c',
+  NONE: '#35503e',
 };

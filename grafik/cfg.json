@@ -1,0 +1,57 @@
+{
+ "ticker": "$BLOC",
+ "theme": "paper",
+ "user": "anon",
+ "host": "bloc",
+ "object": "computer",
+ "command": "pick a bloc",
+ "sub": "every leader, every country, every alliance.",
+ "layout": "readme",
+ "decor": [
+  "grid"
+ ],
+ "list": [
+  "bloc pair --country iran",
+  "197 countries on one map",
+  "342 world leaders, 17 blocs",
+  "live flashpoints from the wire",
+  "launch on pump.fun in seconds"
+ ],
+ "chips": {
+  "label": "pick a side",
+  "items": [
+   "nato",
+   "brics",
+   "crink",
+   "p5",
+   "solo"
+  ],
+  "on": 4
+ },
+ "split": {
+  "label": "by the numbers",
+  "rows": [
+   [
+    "0",
+    "bloc fee per launch",
+    "acc"
+   ],
+   [
+    "1",
+    "signature to launch"
+   ],
+   [
+    "24h",
+    "of headlines on the map"
+   ]
+  ]
+ },
+ "launch": {
+  "cmd": "bloc --live",
+  "lines": [
+   "197 countries mapped",
+   "342 leaders loaded",
+   "wire scanning the last 24h"
+  ]
+ }
+}

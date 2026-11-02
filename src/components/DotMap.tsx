@@ -13,14 +13,14 @@ interface Props {
   onSelect: (i: number | null) => void;
 }
 
-const LAND = '#1b1f25';
-const DIM = '#22262d';
+const LAND = '#1f3026';
+const DIM = '#24372b';
 
 function hex(h: string) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
 function mix(a: number[], b: number[], t: number) { return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
-const RAMP = ['#262a31', '#7a2a12', '#ff6a2b', '#ffe8dc'].map(hex);
+const RAMP = ['#2a3d30', '#6e2a1c', '#e0533d', '#ffe1d6'].map(hex);
 function heatColor(t: number) {
-  if (t <= 0) return '#23272e';
+  if (t <= 0) return '#26392d';
   const x = Math.min(1, t) * (RAMP.length - 1);
   const i = Math.min(RAMP.length - 2, Math.floor(x));
   const c = mix(RAMP[i], RAMP[i + 1], x - i);
@@ -81,22 +81,22 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     const cell = w / COLS;
-    const r = Math.max(0.6, cell * 0.36);
+    const r = Math.max(0.6, cell * 0.34);
     // graticule: equator, tropics, polar circles, prime meridian
     ctx.save();
     ctx.setLineDash([2, 5]);
     ctx.lineWidth = 1;
-    ctx.font = `500 ${Math.max(9, cell * 2.1)}px "JetBrains Mono Variable", monospace`;
+    ctx.font = `500 ${Math.max(10, Math.round(cell * 2.3))}px "JetBrains Mono", monospace`;
     ctx.textBaseline = 'bottom';
     for (const [lat, label] of [[66.56, '66.5°N'], [23.44, '23.4°N'], [0, '0°'], [-23.44, '23.4°S']] as const) {
       const y = ((LAT0 - lat) / STEP) * cell + cell / 2;
-      ctx.strokeStyle = lat === 0 ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.045)';
+      ctx.strokeStyle = lat === 0 ? 'rgba(69,224,127,0.12)' : 'rgba(69,224,127,0.06)';
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillStyle = 'rgba(69,224,127,0.35)';
       ctx.fillText(label, 4, y - 3);
     }
     const x0 = (180 / STEP) * cell;
-    ctx.strokeStyle = 'rgba(255,255,255,0.045)';
+    ctx.strokeStyle = 'rgba(69,224,127,0.06)';
     ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, h); ctx.stroke();
     ctx.restore();
     const groups = new Map<string, number[]>();
@@ -112,8 +112,7 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
       ctx.fillStyle = col;
       ctx.beginPath();
       for (let p = 0; p < pts.length; p += 2) {
-        const x = pts[p] * cell + cell / 2, y = pts[p + 1] * cell + cell / 2;
-        ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.rect(pts[p] * cell + cell / 2 - r, pts[p + 1] * cell + cell / 2 - r, r * 2, r * 2);
       }
       ctx.fill();
     }
@@ -129,19 +128,20 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
     c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
     const ctx = c.getContext('2d')!;
     const cell = w / COLS;
-    const r = Math.max(0.6, cell * 0.36);
+    const r = Math.max(0.6, cell * 0.34);
     let raf = 0;
+    let drawn = false;
     const drawDots = (pts: number[], color: string, rad = r) => {
       ctx.fillStyle = color; ctx.beginPath();
       for (let p = 0; p < pts.length; p += 2) {
-        const x = pts[p] * cell + cell / 2, y = pts[p + 1] * cell + cell / 2;
-        ctx.moveTo(x + rad, y); ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.rect(pts[p] * cell + cell / 2 - rad, pts[p + 1] * cell + cell / 2 - rad, rad * 2, rad * 2);
       }
       ctx.fill();
     };
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
-      if (!visible.current) return;
+      if (!visible.current && drawn && performance.now() - born.current > 1700) return;
+      drawn = true;
       const t = now - born.current;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
@@ -154,7 +154,7 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
           ctx.save(); ctx.beginPath(); ctx.rect(0, 0, revealX, h); ctx.clip();
           ctx.drawImage(base.current, 0, 0, w, h); ctx.restore();
           const g = ctx.createLinearGradient(revealX - 60, 0, revealX, 0);
-          g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(255,255,255,0.18)');
+          g.addColorStop(0, 'rgba(69,224,127,0)'); g.addColorStop(1, 'rgba(69,224,127,0.22)');
           ctx.fillStyle = g; ctx.fillRect(revealX - 60, 0, 60, h);
         } else {
           ctx.drawImage(base.current, 0, 0, w, h);
@@ -170,10 +170,9 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
           const a = Math.max(0, 1 - (sx - col) / 14) * 0.22;
           if (a <= 0.01) continue;
           const b = COL_BUCKETS[col];
-          ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`; ctx.beginPath();
+          ctx.fillStyle = `rgba(69,224,127,${(a * 0.8).toFixed(3)})`; ctx.beginPath();
           for (let p = 0; p < b.length; p += 2) {
-            const x = col * cell + cell / 2, y = b[p] * cell + cell / 2;
-            ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.rect(col * cell + cell / 2 - r, b[p] * cell + cell / 2 - r, r * 2, r * 2);
           }
           ctx.fill();
         }
@@ -188,24 +187,25 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
           for (let k = 0; k < 2; k++) {
             const ph = ((t / 2600 + n * 0.17 + k * 0.5) % 1);
             const rad = 4 + ph * (18 + 34 * strength) * (cell / 4.5);
-            ctx.strokeStyle = `rgba(255,106,43,${((1 - ph) * 0.55 * (0.4 + strength)).toFixed(3)})`;
+            ctx.strokeStyle = `rgba(224,83,61,${((1 - ph) * 0.55 * (0.4 + strength)).toFixed(3)})`;
             ctx.lineWidth = 1.2;
             ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.stroke();
           }
-          ctx.fillStyle = '#ff6a2b';
-          ctx.beginPath(); ctx.arc(x, y, Math.max(1.6, r * 0.9), 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#e0533d';
+          const q = Math.max(1.8, r);
+          ctx.fillRect(x - q, y - q, q * 2, q * 2);
         });
       }
       // hover + selected
       const hv = hoverRef.current;
-      if (hv >= 0 && hv !== selRef.current) drawDots(COUNTRY_DOTS[hv], 'rgba(255,255,255,0.78)');
+      if (hv >= 0 && hv !== selRef.current) drawDots(COUNTRY_DOTS[hv], 'rgba(248,243,234,0.85)');
       const sel = selRef.current;
       if (sel != null && sel >= 0) {
         const pulse = 0.75 + Math.sin(t / 260) * 0.25;
-        drawDots(COUNTRY_DOTS[sel], `rgba(255,255,255,${pulse.toFixed(3)})`, r * 1.08);
+        drawDots(COUNTRY_DOTS[sel], `rgba(248,243,234,${pulse.toFixed(3)})`, r * 1.08);
         const cty = COUNTRIES[sel];
         const x = cty.cx * cell + cell / 2, y = cty.cy * cell + cell / 2;
-        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(248,243,234,0.7)'; ctx.lineWidth = 1.5;
         const s = 14 + Math.sin(t / 400) * 2;
         ctx.beginPath();
         for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
@@ -251,7 +251,7 @@ export default function DotMap({ mode, bloc, heat, selected, onSelect }: Props) 
 }
 
 // Static mini map used on bloc cards and coin images
-export function drawMiniMap(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, lit: (i: number) => string | null, dim = '#1d2127', rf = 0.36) {
+export function drawMiniMap(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, lit: (i: number) => string | null, dim = '#1d2127', rf = 0.36, square = true) {
   const cell = w / COLS;
   const r = Math.max(0.5, cell * rf);
   const groups = new Map<string, number[]>();
@@ -265,7 +265,8 @@ export function drawMiniMap(ctx: CanvasRenderingContext2D, x0: number, y0: numbe
     ctx.fillStyle = col; ctx.beginPath();
     for (let p = 0; p < pts.length; p += 2) {
       const x = x0 + pts[p] * cell + cell / 2, y = y0 + pts[p + 1] * cell + cell / 2;
-      ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (square) ctx.rect(x - r, y - r, r * 2, r * 2);
+      else { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2); }
     }
     ctx.fill();
   }

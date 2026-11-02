@@ -2,82 +2,105 @@ import { drawMiniMap } from '../components/DotMap';
 import { COLS, ROWS, COUNTRIES, BLOC_MEMBERS, COUNTRY_INDEX, alignmentOf, type Subject } from './world';
 import { ALIGN, BLOC_BY_CODE } from './blocs';
 
+const PAPER = '#f0e7d8';
+const CARD = '#f8f3ea';
+const SHADOW = '#dcd2bf';
+const INK = '#2b2a26';
+const LINE = '#3a372f';
+const MUTED = '#8b8474';
+const ACCENT = '#2f9e4f';
+const SCREEN = '#16211a';
+const MONO = '"JetBrains Mono", monospace';
+
 export function subjectColor(s: Subject): string {
   if (s.kind === 'bloc' && s.bloc) return BLOC_BY_CODE[s.bloc].color;
   if (s.country != null) {
     const a = alignmentOf(COUNTRIES[s.country]);
-    return a === 'NONE' ? '#f2f3f5' : ALIGN[a];
+    return a === 'NONE' ? '#45e07f' : ALIGN[a];
   }
-  return '#f2f3f5';
+  return '#45e07f';
 }
 
 export async function renderCoinImage(canvas: HTMLCanvasElement, s: Subject, ticker: string, size = 1000) {
   try {
-    await Promise.all([document.fonts.load('800 100px "Archivo Variable"'), document.fonts.load('500 20px "JetBrains Mono Variable"'), document.fonts.load('600 20px "JetBrains Mono Variable"')]);
+    await Promise.all([document.fonts.load(`500 40px ${MONO}`), document.fonts.load(`400 20px ${MONO}`), document.fonts.load(`700 40px ${MONO}`)]);
   } catch { /* ignore */ }
   canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d')!;
   const u = size / 1000;
-  ctx.fillStyle = '#07080a';
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, size, size);
-  // faint grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.035)'; ctx.lineWidth = 1;
-  for (let x = 0; x <= size; x += 50 * u) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, size); ctx.stroke(); }
-  for (let y = 0; y <= size; y += 50 * u) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke(); }
+  ctx.fillStyle = 'rgba(60,50,30,0.10)';
+  for (let y = 11 * u; y < size; y += 22 * u) for (let x = 11 * u; x < size; x += 22 * u) { ctx.beginPath(); ctx.arc(x, y, 1.2 * u, 0, Math.PI * 2); ctx.fill(); }
 
   const color = subjectColor(s);
   const members = s.kind === 'bloc' && s.bloc ? new Set(BLOC_MEMBERS[s.bloc].map((id) => COUNTRY_INDEX.get(id))) : null;
-  const mapW = 940 * u, x0 = 30 * u, y0 = 230 * u;
-  drawMiniMap(ctx, x0, y0, mapW, (i) => (members ? (members.has(i) ? color : null) : i === s.country ? color : null), '#20242b', 0.38);
-  const cell = mapW / COLS;
+  const code = s.kind === 'bloc' ? s.bloc! : COUNTRIES[s.country!].id;
+
+  // ---- terminal card: bar + dark screen with the map
+  const bx = 64 * u, by = 70 * u, bw = 872 * u, barH = 54 * u, bh = 470 * u;
+  ctx.fillStyle = SHADOW; ctx.fillRect(bx + 14 * u, by + 14 * u, bw, bh);
+  ctx.fillStyle = CARD; ctx.fillRect(bx, by, bw, barH);
+  ctx.fillStyle = SCREEN; ctx.fillRect(bx, by + barH, bw, bh - barH);
+  ctx.strokeStyle = LINE; ctx.lineWidth = 4 * u;
+  ctx.strokeRect(bx, by, bw, bh);
+  ctx.beginPath(); ctx.moveTo(bx, by + barH); ctx.lineTo(bx + bw, by + barH); ctx.stroke();
+  ctx.lineWidth = 3 * u;
+  for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(bx + (34 + i * 30) * u, by + barH / 2, 8 * u, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.fillStyle = MUTED; ctx.font = `400 ${22 * u}px ${MONO}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+  ctx.fillText(`bloc-1 — ${code.toLowerCase()}`, bx + bw - 24 * u, by + barH / 2 + 1 * u);
+  ctx.textAlign = 'left';
+
+  const sx = bx + 30 * u, sw = bw - 60 * u;
+  const cell = sw / COLS;
+  const sy = by + barH + (bh - barH - ROWS * cell) / 2;
+  drawMiniMap(ctx, sx, sy, sw, (i) => (members ? (members.has(i) ? color : null) : i === s.country ? color : null), '#26392d', 0.4, true);
   if (s.country != null) {
     const c = COUNTRIES[s.country];
-    const cx = x0 + c.cx * cell + cell / 2, cy = y0 + c.cy * cell + cell / 2;
-    for (const [rad, a] of [[26, 0.9], [54, 0.45], [86, 0.2]] as const) {
-      ctx.strokeStyle = hexA(color, a); ctx.lineWidth = 2 * u;
-      ctx.beginPath(); ctx.arc(cx, cy, rad * u, 0, Math.PI * 2); ctx.stroke();
+    const cx = sx + c.cx * cell + cell / 2, cy = sy + c.cy * cell + cell / 2;
+    ctx.strokeStyle = '#f8f3ea'; ctx.lineWidth = 3 * u;
+    const r = 26 * u, k = 9 * u;
+    ctx.beginPath();
+    for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      ctx.moveTo(cx + dx * r, cy + dy * (r - k)); ctx.lineTo(cx + dx * r, cy + dy * r); ctx.lineTo(cx + dx * (r - k), cy + dy * r);
     }
+    ctx.stroke();
   }
-  // frame lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1.5 * u;
-  ctx.beginPath(); ctx.moveTo(30 * u, 200 * u); ctx.lineTo(970 * u, 200 * u); ctx.moveTo(30 * u, y0 + ROWS * cell + 26 * u); ctx.lineTo(970 * u, y0 + ROWS * cell + 26 * u); ctx.stroke();
 
-  // header
-  drawMark(ctx, 40 * u, 64 * u, 11 * u, '#ffffff');
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `600 ${26 * u}px "JetBrains Mono Variable", monospace`;
-  ctx.textBaseline = 'middle';
-  ctx.fillText('PAIRED ON BLOC', 132 * u, 78 * u);
-  ctx.textAlign = 'right';
-  ctx.fillStyle = color;
-  const code = s.kind === 'bloc' ? s.bloc! : COUNTRIES[s.country!].id;
-  ctx.fillText(code, 960 * u, 78 * u);
-  ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.font = `500 ${20 * u}px "JetBrains Mono Variable", monospace`;
-  ctx.fillText(s.kind === 'leader' ? 'WORLD LEADER' : s.kind === 'country' ? 'COUNTRY' : 'BLOC', 132 * u, 110 * u);
-
-  // ticker
-  const t = '$' + (ticker || s.ticker).toUpperCase();
-  let fs = 200 * u;
-  const tf = () => `800 expanded ${fs}px "Archivo Variable", sans-serif`;
-  ctx.font = tf();
-  while (ctx.measureText(t).width > 920 * u && fs > 60 * u) { fs -= 6 * u; ctx.font = tf(); }
-  ctx.fillStyle = '#ffffff';
+  // ---- prompt + ticker
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(t, 38 * u, 855 * u);
-  // subject line
-  ctx.font = `500 ${26 * u}px "JetBrains Mono Variable", monospace`;
-  ctx.fillStyle = 'rgba(255,255,255,0.62)';
+  ctx.fillStyle = MUTED; ctx.font = `400 ${34 * u}px ${MONO}`;
+  ctx.fillText('anon@bloc ~ % pair', 66 * u, 640 * u);
+  const t = '$' + (ticker || s.ticker).toUpperCase();
+  let fs = 150 * u;
+  const tf = () => `500 ${fs}px ${MONO}`;
+  ctx.font = tf();
+  while (ctx.measureText(t).width > 790 * u && fs > 50 * u) { fs -= 6 * u; ctx.font = tf(); }
+  ctx.fillStyle = INK;
+  const base = 640 * u + 30 * u + fs * 0.8;
+  ctx.fillText(t, 60 * u, base);
+  const tw = ctx.measureText(t).width;
+  ctx.fillStyle = ACCENT;
+  ctx.fillRect(60 * u + tw + 10 * u, base - fs * 0.74, fs * 0.5, fs * 0.86);
+
+  // ---- subject line + pixel computer + label
   const blocsOf = s.country != null ? COUNTRIES[s.country].blocs.map((b) => BLOC_BY_CODE[b].label).join(' · ') : '';
   const line = (s.kind === 'leader'
     ? `${s.name} — ${s.sub.split(' · ').slice(-2).join(', ')}`
     : s.kind === 'country'
       ? `${s.name}${blocsOf ? ' — ' + blocsOf : ''}`
-      : `${s.bloc ? BLOC_BY_CODE[s.bloc].name : s.name} — ${members ? members.size : 0} members`).toUpperCase();
-  ctx.fillText(fit(ctx, line, 920 * u), 40 * u, 925 * u);
-  ctx.fillStyle = color;
-  ctx.fillRect(40 * u, 950 * u, 64 * u, 6 * u);
+      : `${s.bloc ? BLOC_BY_CODE[s.bloc].name : s.name} — ${members ? members.size : 0} members`).toLowerCase();
+  ctx.font = `400 ${26 * u}px ${MONO}`;
+  ctx.fillStyle = MUTED;
+  ctx.fillText(fit(ctx, line, 870 * u), 66 * u, 885 * u);
+  if (typeof TK !== 'undefined') {
+    const g = TK.OBJECTS.computer({ ticker: '$BLOC' });
+    const cellPx = Math.max(1, Math.floor(46 * u / g.h));
+    TK.draw(ctx, g, { theme: 'paper', cell: cellPx, x: 66 * u, y: 914 * u, shadow: false });
+    ctx.fillStyle = INK; ctx.font = `500 ${22 * u}px ${MONO}`;
+    ctx.fillText('paired on bloc', 66 * u + g.w * cellPx + 16 * u, 950 * u);
+  }
 }
 
 function fit(ctx: CanvasRenderingContext2D, s: string, w: number) {
@@ -85,22 +108,6 @@ function fit(ctx: CanvasRenderingContext2D, s: string, w: number) {
   let out = s;
   while (out.length > 4 && ctx.measureText(out + '…').width > w) out = out.slice(0, -1);
   return out + '…';
-}
-
-function hexA(h: string, a: number) {
-  const n = parseInt(h.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
-
-// The BLOC mark: a 3x3 block of dots with one dot pulled out of line.
-export function drawMark(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
-  ctx.fillStyle = color;
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
-    if (i === 2 && j === 0) continue;
-    ctx.beginPath(); ctx.arc(x + j * r * 2.6, y + i * r * 2.6, r, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.fillStyle = '#ff6a2b';
-  ctx.beginPath(); ctx.arc(x, y + 2 * r * 2.6, r, 0, Math.PI * 2); ctx.fill();
 }
 
 export function canvasToBlob(c: HTMLCanvasElement): Promise<Blob> {

@@ -43,52 +43,49 @@ export default function CountryPanel({ index, heat, onClose, onPair }: Props) {
   const heads = heat.heads[index];
 
   return (
-    <aside className="panel" aria-label={`${c.name} details`}>
-      <div className="panel-head">
-        <div>
-          <div className="panel-code mono">{c.id} <span>· {c.region}</span></div>
-          <h3>{c.name}</h3>
-        </div>
-        <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
-      </div>
-
-      {c.blocs.length > 0 && (
-        <div className="panel-blocs">
-          {c.blocs.map((b) => <span key={b} className="tag" style={{ '--c': BLOC_BY_CODE[b].color } as React.CSSProperties}><i />{BLOC_BY_CODE[b].label}</span>)}
-        </div>
-      )}
-
-      <div className="panel-sec">
-        <div className="panel-label mono">Leaders</div>
-        {c.leaders.map((l, j) => (
-          <div className="leader" key={l.n + j}>
-            <div className="avatar mono">{initials(l.n)}</div>
-            <div className="leader-txt"><b>{l.n}</b><span>{l.r}</span></div>
-            <button className="btn btn-ghost btn-xs" onClick={() => onPair(`l:${c.id}:${j}`)}>${leaderTicker(l.n)}</button>
+    <aside className="panel term" aria-label={`${c.name} details`}>
+      <div className="bar"><i /><i /><i /><span>{c.id.toLowerCase()} — country</span><button className="x" onClick={onClose} aria-label="Close">✕</button></div>
+      <div className="body panel-body">
+        <div className="panel-code mut">{c.id} · {c.region.toLowerCase()}</div>
+        <h3>{c.name.toLowerCase()}</h3>
+        {c.blocs.length > 0 && (
+          <div className="panel-blocs">
+            {c.blocs.map((b) => <span key={b} className="tag2" style={{ '--c': BLOC_BY_CODE[b].color } as React.CSSProperties}><i />{BLOC_BY_CODE[b].label.toLowerCase()}</span>)}
           </div>
-        ))}
-        <button className="btn btn-line btn-block" onClick={() => onPair(`c:${c.id}`)}>Pair to {c.name} · ${countryTicker(c)}</button>
-      </div>
+        )}
 
-      <div className="panel-sec">
-        <div className="panel-label mono">Headlines · 24h <b className={n ? 'hot' : ''}>{n}</b></div>
-        {heads.length ? heads.slice(0, 3).map((h, k) => (
-          <div className="head" key={k}><p>{h.t}</p><span className="mono">{h.s} · {ago(h.d)}</span></div>
-        )) : <p className="muted small">Quiet on the wire.</p>}
-      </div>
+        <div className="panel-sec">
+          <div className="panel-label"># leaders</div>
+          {c.leaders.map((l, j) => (
+            <div className="leader" key={l.n + j}>
+              <div className="avatar">{initials(l.n)}</div>
+              <div className="leader-txt"><b>{l.n}</b><span>{l.r.toLowerCase()}</span></div>
+              <button className="btn xs" onClick={() => onPair(`l:${c.id}:${j}`)}>${leaderTicker(l.n)}</button>
+            </div>
+          ))}
+          <button className="btn pri block" onClick={() => onPair(`c:${c.id}`)}>pair to {c.name.toLowerCase()} · ${countryTicker(c)}</button>
+        </div>
 
-      <div className="panel-sec">
-        <div className="panel-label mono">Already on-chain · “{q}”</div>
-        {pairs === null && <div className="skeleton" />}
-        {pairs && pairs.length === 0 && <p className="muted small">Nothing paired yet. First one gets the name.</p>}
-        {pairs && pairs.slice(0, 4).map((p) => (
-          <a className="pair-row" key={p.ca} href={p.url} target="_blank" rel="noreferrer">
-            {p.img ? <img src={p.img} alt="" /> : <span className="pair-ph" />}
-            <span className="pair-sym">${p.sym}</span>
-            <span className="pair-name">{p.name}</span>
-            <span className="pair-mc mono">{money(p.mcap)}</span>
-          </a>
-        ))}
+        <div className="panel-sec">
+          <div className="panel-label"># headlines · 24h <b className={n ? 'red' : ''}>{n}</b></div>
+          {heads.length ? heads.slice(0, 3).map((h, k) => (
+            <div className="head" key={k}><p>{h.t}</p><span className="mut">{h.s} · {ago(h.d)}</span></div>
+          )) : <p className="mut small">quiet on the wire.</p>}
+        </div>
+
+        <div className="panel-sec">
+          <div className="panel-label"># already on-chain · “{q.toLowerCase()}”</div>
+          {pairs === null && <div className="skeleton" />}
+          {pairs && pairs.length === 0 && <p className="mut small">nothing paired yet. first one gets the name.</p>}
+          {pairs && pairs.slice(0, 4).map((p) => (
+            <a className="pair-row" key={p.ca} href={p.url} target="_blank" rel="noreferrer">
+              {p.img ? <img src={p.img} alt="" /> : <span className="pair-ph" />}
+              <span className="pair-sym">${p.sym}</span>
+              <span className="pair-name">{p.name}</span>
+              <span className="pair-mc">{money(p.mcap)}</span>
+            </a>
+          ))}
+        </div>
       </div>
     </aside>
   );

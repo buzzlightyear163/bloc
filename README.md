@@ -1,4 +1,6 @@
-# BLOC — Pick a bloc.
+# BLOC — pick a bloc
+
+Style: termkit (paper theme). The pixel computer in the logo and hero is drawn by `public/termkit.js`, the same engine that renders the X graphics in `grafik/`.
 
 Solana launchpad that pairs a memecoin to any world leader, any country or any of 17 blocs (NATO, BRICS, CRINK, Nuclear 9, P5, G7, G20, EU, SCO, OPEC, GCC, Arab League, ASEAN, AUKUS, Quad, Five Eyes, AES). Coins launch on pump.fun.
 
@@ -16,6 +18,9 @@ npm run build      # type-check + production build to dist/
 
 ## Deploy (Vercel)
 
+After each deploy check: fonts load (JetBrains Mono), the X preview card shows `og.png`, and the map's wire lamp says LIVE (not snapshot).
+
+
 Import the repo in Vercel (framework: Vite). The `api/` folder deploys as serverless functions automatically.
 
 Environment variables:
@@ -28,7 +33,8 @@ Environment variables:
 
 ## Edit
 
-- `src/config.ts` — $BLOC contract address, X link, Telegram. Empty values are hidden.
+- `src/config.ts` — $BLOC contract address (`ca`), X link, Telegram, pixel `object`. Empty CA shows "posted here and on X at launch"; buy buttons go to `https://pump.fun/coin/<ca>` once it's set.
+- `grafik/` — pfp (2000²), banner (3000×1000), launch (3200×1800), og, fav. Re-render: `cd grafik && npm i @fontsource/jetbrains-mono @fontsource/silkscreen && python3 render.py cfg.json .` (needs Python Playwright).
 - `data/leaders.raw.json` — heads of state/government (Wikipedia, captured 2 Nov 2026). After editing run `npm run data`.
 - `scripts/build-data.mjs` — bloc memberships, aliases used for headline matching, map grid.
 - `src/data/heat-snapshot.json` — fallback headline snapshot shown (labelled) if both news feeds are down.
