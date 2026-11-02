@@ -1,4 +1,5 @@
 import { drawMiniMap } from '../components/DotMap';
+import { CONFIG } from '../config';
 import { COLS, ROWS, COUNTRIES, BLOC_MEMBERS, COUNTRY_INDEX, alignmentOf, type Subject } from './world';
 import { ALIGN, BLOC_BY_CODE } from './blocs';
 
@@ -95,7 +96,7 @@ export async function renderCoinImage(canvas: HTMLCanvasElement, s: Subject, tic
   ctx.fillStyle = MUTED;
   ctx.fillText(fit(ctx, line, 870 * u), 66 * u, 885 * u);
   if (typeof TK !== 'undefined') {
-    const g = TK.OBJECTS.computer({ ticker: '$BLOC' });
+    const g = TK.OBJECTS[CONFIG.object]({ ticker: CONFIG.ticker });
     const cellPx = Math.max(1, Math.floor(46 * u / g.h));
     TK.draw(ctx, g, { theme: 'paper', cell: cellPx, x: 66 * u, y: 914 * u, shadow: false });
     ctx.fillStyle = INK; ctx.font = `500 ${22 * u}px ${MONO}`;

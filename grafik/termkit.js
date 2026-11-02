@@ -92,6 +92,65 @@ const TK = (() => {
       g.outline();
       return g;
     },
+    // BLOC: the computer with the world on its screen. Land in phosphor, war flashpoints in red, the name on the case.
+    worldpc({ ticker = "" } = {}) {
+      const MAP = [
+        "..........###.######.............###........",
+        "..############.####.....###.################",
+        "..#########..#..#......#####################",
+        "......#########......#.################..#..",
+        ".......########.......##################....",
+        ".......######........#################......",
+        ".......######........###..###########.......",
+        "........##..........#################.......",
+        ".........##.........#########..#####........",
+        "...........#........########...#..##........",
+        "............####.....#######......#.........",
+        "............#####......####.......###.#.....",
+        "............######.....####............#....",
+        ".............#####.....####..........###....",
+        ".............####.......##.#........#####...",
+        ".............###........##..........#####...",
+        ".............##........................#....",
+      ];
+      const HOT = [[26, 4], [26, 6], [29, 6]];            // ukraine, israel, iran
+      const t = ticker.replace(/^\$/, "").toUpperCase();
+      const sw = MAP[0].length + 4, sh = MAP.length + 4;  // screen with a 2-cell margin
+      const mw = sw + 10, mh = sh + 12;
+      const W = mw + 6, H = mh + 14, g = Grid(W, H);
+      const mx = 3, my = 1, sx = mx + 4, sy = my + 3;
+      // monitor housing
+      g.rect(mx, my, mw, mh, "body"); g.set(mx, my, null); g.set(mx + mw - 1, my, null);
+      g.rect(mx + 1, my + 1, mw - 2, 1, "hi"); g.rect(mx + 1, my + 1, 1, mh - 3, "hi");
+      g.rect(mx + mw - 2, my + 1, 1, mh - 2, "shade"); g.rect(mx + 1, my + mh - 2, mw - 2, 1, "shade");
+      // bezel + screen
+      g.rect(sx - 1, sy - 1, sw + 2, sh + 2, "shade"); g.rect(sx - 1, sy - 1, sw + 2, 1, "dark"); g.rect(sx - 1, sy - 1, 1, sh + 2, "dark");
+      g.rect(sx, sy, sw, sh, "screen");
+      [[sx, sy], [sx + sw - 1, sy], [sx, sy + sh - 1], [sx + sw - 1, sy + sh - 1]].forEach(([x, y]) => g.set(x, y, "shade"));
+      // the world, in phosphor
+      MAP.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === "#") g.set(sx + 2 + i, sy + 2 + j, "glow"); }));
+      HOT.forEach(([x, y]) => g.set(sx + 2 + x, sy + 2 + y, "red"));
+      // chin: the name on the case, led, floppy slot
+      const py = my + mh - 7;
+      g.text(t, mx + 5, py, "slot");
+      const lx = mx + 5 + textWidth(t) + 3;
+      g.rect(lx, py + 2, 2, 1, "led"); g.set(lx + 3, py + 2, "red");
+      const fw = 14; g.rect(mx + mw - 5 - fw, py + 2, fw, 1, "slot"); g.rect(mx + mw - 5 - fw, py + 3, fw, 1, "hi");
+      // neck
+      const ny = my + mh, nx = mx + Math.floor(mw / 2) - 7;
+      g.rect(nx, ny, 14, 3, "shade"); g.rect(nx, ny, 14, 1, "dark");
+      // keyboard slab
+      const kx = 1, kw = W - 2, ky = ny + 3, kh = 9;
+      g.rect(kx, ky, kw, kh, "body"); g.set(kx, ky, null); g.set(kx + kw - 1, ky, null);
+      g.rect(kx + 1, ky + 1, kw - 2, 1, "hi"); g.rect(kx + 1, ky + kh - 1, kw - 2, 1, "shade");
+      const k0 = kx + 3 + ((kw - 6) % 2 ? 1 : 0), k1 = kx + kw - 3;
+      for (let x = k0; x < k1; x += 2) { g.set(x, ky + 2, "dark"); g.set(x, ky + 4, "dark"); }
+      const mid = kx + Math.floor(kw / 2);
+      for (let x = k0; x < k1; x += 2) if (x < mid - 11 || x > mid + 10) g.set(x, ky + 6, "dark");
+      g.rect(mid - 10, ky + 6, 20, 1, "dark");
+      g.outline();
+      return g;
+    },
     // Example of a custom object: a framed token with a halo. Copy this pattern for new narratives.
     frame({ ticker = "" } = {}) {
       const g = Grid(30, 38), t = ticker.replace(/^\$/, "").toUpperCase().slice(0, 1);

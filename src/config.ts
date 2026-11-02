@@ -2,7 +2,7 @@
 export const CONFIG = {
   ticker: '$BLOC',
   // pixel object drawn by termkit.js (same as pfp/banner/favicon)
-  object: 'computer',
+  object: 'worldpc',
   // $BLOC contract address. Leave empty to hide the CA chip.
   ca: '',
   // X profile URL, e.g. https://x.com/pickabloc. Leave empty to hide.
